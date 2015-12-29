@@ -1,0 +1,4 @@
+test_vectorops.rb
+vector_sse-*.gem
+tmp/
+*.sublime-*
