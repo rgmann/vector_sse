@@ -72,7 +72,7 @@ use the appropriate implementation.
      product = left * 3.14
 
 
-### Example: Subtract Arrays and find the sum of the elements of an array ###
+### Example: Subtract Arrays and find the sum of the elements of an Array ###
 
      require 'vector_sse'
 
