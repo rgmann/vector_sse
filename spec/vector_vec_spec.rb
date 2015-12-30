@@ -5,16 +5,35 @@ rescue StandardError => e
    require File.join( '..', 'lib', 'vector_sse' )
 end
 
-RSpec.describe VectorSse::Vec do
+RSpec.describe VectorSSE::Array do
 
    describe "constructor" do
    end
 
+   describe "element insertion" do
+
+      it "rejects insertion of invalid data types" do
+         arr = VectorSSE::Array.new( VectorSSE::Type::S32 )
+
+         expect {
+            arr << "not a valid data type"
+         }.to raise_error ArgumentError
+
+         expect {
+            arr.insert( 0, [ 1, "not a valid data type" ] )
+         }.to raise_error ArgumentError
+
+         expect {
+            arr[ 0 ] = "not a valid data type"
+         }.to raise_error ArgumentError        
+      end
+   end
+
    describe "vector addition" do
       it "returns difference between vectors" do
-         left = VectorSse::Vec.new( VectorSse::Type::S32 )
+         left = VectorSSE::Array.new( VectorSSE::Type::S32 )
          left.replace [ 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 ]
-         right = VectorSse::Vec.new( VectorSse::Type::S32 )
+         right = VectorSSE::Array.new( VectorSSE::Type::S32 )
          right.replace [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]
 
          result = left - right
@@ -27,12 +46,12 @@ RSpec.describe VectorSse::Vec do
       end
 
       it "returns difference after subtracting scalar Fixnum" do
-         left = VectorSse::Vec.new( VectorSse::Type::S32 )
+         left = VectorSSE::Array.new( VectorSSE::Type::S32 )
          left.replace [ 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 ]
 
          left -= 2
 
-         expect( left.type ).to eq( VectorSse::Type::S32 )
+         expect( left.type ).to eq( VectorSSE::Type::S32 )
          expect( left.length ).to eq( 10 )
 
          [ 8, 7, 6, 5, 4, 3, 2, 1, 0, -1 ].each_with_index do |value,index|
@@ -45,12 +64,12 @@ RSpec.describe VectorSse::Vec do
          values = [ 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 ]
          scalar_value = 2.8
 
-         left = VectorSse::Vec.new( VectorSse::Type::F32 )
+         left = VectorSSE::Array.new( VectorSSE::Type::F32 )
          left.replace values
 
          left -= scalar_value
 
-         expect( left.type ).to eq( VectorSse::Type::F32 )
+         expect( left.type ).to eq( VectorSSE::Type::F32 )
          expect( left.length ).to eq( 10 )
 
          values.each_with_index do |value,index|
@@ -66,7 +85,23 @@ RSpec.describe VectorSse::Vec do
          data = [ 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 ]
          scalar_value = -2
 
-         left = VectorSse::Vec.new( VectorSse::Type::S32 )
+         left = VectorSSE::Array.new( VectorSSE::Type::S32 )
+         left.replace data
+
+         left *= scalar_value
+
+         expect( left.length ).to eq( data.length )
+         data.each_with_index do |value,index|
+            expect( left[ index ] ).to eq( value * scalar_value )
+         end
+
+      end
+
+      it "performs scalar multiplication when right factor is 64-bit scalar integer" do
+         data = [ 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 ]
+         scalar_value = -2
+
+         left = VectorSSE::Array.new( VectorSSE::Type::S64 )
          left.replace data
 
          left *= scalar_value
@@ -82,7 +117,7 @@ RSpec.describe VectorSse::Vec do
          data = [ 10.1, 9.2, 8.3, 7.4, 6.5, 5.6, 4.7, 3.8, 2.9, 1.93 ]
          scalar_value = -2.2
 
-         left = VectorSse::Vec.new( VectorSse::Type::F32 )
+         left = VectorSSE::Array.new( VectorSSE::Type::F32 )
          left.replace data
 
          left *= scalar_value
@@ -98,7 +133,7 @@ RSpec.describe VectorSse::Vec do
          data = [ 10.1, 9.2, 8.3, 7.4, 6.5, 5.6, 4.7, 3.8, 2.9, 1.93 ]
          scalar_value = -2.2
 
-         left = VectorSse::Vec.new( VectorSse::Type::F64 )
+         left = VectorSSE::Array.new( VectorSSE::Type::F64 )
          left.replace data
 
          left *= scalar_value

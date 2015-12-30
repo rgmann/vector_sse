@@ -1,10 +1,42 @@
+#
+# Copyright (c) 2015, Robert Glissmann
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# * Redistributions of source code must retain the above copyright notice, this
+#   list of conditions and the following disclaimer.
+#
+# * Redistributions in binary form must reproduce the above copyright notice,
+#   this list of conditions and the following disclaimer in the documentation
+#   and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+
+# %% license-end-token %%
+# 
+# Author: Robert.Glissmann@gmail.com (Robert Glissmann)
+# 
+# 
+
 bin_root = File.join( File.dirname( __FILE__ ), 'vector_sse' )
 require File.join( bin_root, 'vector_sse.so' )
 
 
-module VectorSse
+module VectorSSE
 
-   VERSION = "1.0"
+   VERSION = "0.0.1.pre"
 
    module Type
       S32 = 0
@@ -27,29 +59,33 @@ module VectorSse
       attr_reader :rows
       attr_reader :cols
 
-      attr_reader :overflow
+      def initialize( type, rows, cols, data=nil )
 
-      def initialize( type, rows, cols )
-
-         if VectorSse::valid_type( type )
+         if VectorSSE::valid_type( type )
             @type = type
          else
-            raise "invalid SSE matrix type"
+            raise ArgumentError.new( "invalid SSE matrix type for argument 0" )
          end
 
          if rows < MIN_ROW_COL_COUNT
-            raise "row count must be greater than zero"
+            raise ArgumentError.new( "row count must be greater than zero for argument 1" )
          end
 
          if cols < MIN_ROW_COL_COUNT
-            raise "column count must be greater than zero"
+            raise ArgumentError.new( "column count must be greater than zero for argument 2" )
+         end
+
+         if data && ( data.class != ::Array )
+            raise ArgumentError.new( "expected value of type Array for argument 3" )
          end
 
          @rows = rows
          @cols = cols
          @linear_size = @rows * @cols
 
-         @data = Array.new( @linear_size, 0 )
+         @data = ::Array.new( @linear_size, 0 )
+
+         fill( data ) if data
       end
 
       def at( row, col )
@@ -59,13 +95,19 @@ module VectorSse
 
       def set( row, col, val )
          valid_row_col( row, col )
+         valid_data_type( val )
          @data[ linear_index( row, col ) ] = val
       end
 
       def fill( data )
          if data.length != @rows * @cols
-            raise "size does not match matrix size"
+            raise ArgumentError.new( "size does not match matrix size" )
          end
+
+         data.each do |value|
+            valid_data_type( value )
+         end
+
          @data = data
       end
 
@@ -76,6 +118,7 @@ module VectorSse
 
       def []=( pos, val )
          valid_linear_index( pos )
+         valid_data_type( val )
          @data[ pos ] = val
       end
 
@@ -100,9 +143,9 @@ module VectorSse
             scalar_mul = true
             scalar_value = other
             other = Mat.new( @type, @rows, @cols )
-            other.data.replace( Array.new( @linear_size, scalar_value ) )
+            other.data.replace( ::Array.new( @linear_size, scalar_value ) )
 
-         elsif other.class != self.class
+         elsif other.class == self.class
 
             if @cols != other.rows
                raise "invalid matrix dimensions"
@@ -119,29 +162,30 @@ module VectorSse
          case @type
          when Type::S32
             if scalar_mul
-               result.data.replace( VectorSse::vec_mul_s32( self.data, other.data ) )
+               result.data.replace( VectorSSE::vec_mul_s32( self.data, other.data ) )
             else
-               result.data.replace( VectorSse::mul_s32(
+               result.data.replace( VectorSSE::mul_s32(
                   @data, @rows, @cols, other.data, other.rows, other.cols ) )
             end
          when Type::S64
             if scalar_mul
+               result.data.replace( VectorSSE::vec_mul_s32( self.data, other.data ) )
             else
-               result.data.replace( VectorSse::mul_s64(
+               result.data.replace( VectorSSE::mul_s64(
                   @data, @rows, @cols, other.data, other.rows, other.cols ) )
             end
          when Type::F32
             if scalar_mul
-               result.data.replace( VectorSse::vec_mul_f32( self.data, other.data ) )
+               result.data.replace( VectorSSE::vec_mul_f32( self.data, other.data ) )
             else
-               result.data.replace( VectorSse::mul_f32(
+               result.data.replace( VectorSSE::mul_f32(
                   @data, @rows, @cols, other.data, other.rows, other.cols ) )
             end
          when Type::F64
             if scalar_mul
-               result.data.replace( VectorSse::vec_mul_f64( self.data, other.data ) )
+               result.data.replace( VectorSSE::vec_mul_f64( self.data, other.data ) )
             else
-               result.data.replace( VectorSse::mul_f64(
+               result.data.replace( VectorSSE::mul_f64(
                   @data, @rows, @cols, other.data, other.rows, other.cols ) )
             end
          end
@@ -155,7 +199,7 @@ module VectorSse
 
             scalar_value = other
             other = Mat.new( @type, @rows, @cols )
-            other.data.replace( Array.new( @linear_size, scalar_value ) )
+            other.data.replace( ::Array.new( @linear_size, scalar_value ) )
 
          elsif other.class == self.class
 
@@ -175,13 +219,13 @@ module VectorSse
 
          case @type
          when Type::S32
-            result.data.replace( VectorSse::add_s32( self.data, other.data ) )
+            result.data.replace( VectorSSE::add_s32( self.data, other.data ) )
          when Type::S64
-            result.data.replace( VectorSse::add_s64( self.data, other.data ) )
+            result.data.replace( VectorSSE::add_s64( self.data, other.data ) )
          when Type::F32
-            result.data.replace( VectorSse::add_f32( self.data, other.data ) )
+            result.data.replace( VectorSSE::add_f32( self.data, other.data ) )
          when Type::F64
-            result.data.replace( VectorSse::add_f64( self.data, other.data ) )
+            result.data.replace( VectorSSE::add_f64( self.data, other.data ) )
          end
 
          result
@@ -193,7 +237,7 @@ module VectorSse
 
             scalar_value = other
             other = Mat.new( @type, @rows, @cols )
-            other.data = Array.new( @linear_size, scalar_value )
+            other.data = ::Array.new( @linear_size, scalar_value )
 
          elsif other.class == self.class
 
@@ -213,16 +257,24 @@ module VectorSse
 
          case @type
          when Type::S32
-            result.data.replace( VectorSse::sub_s32( self.data, other.data ) )
+            result.data.replace( VectorSSE::sub_s32( self.data, other.data ) )
          when Type::S64
-            result.data.replace( VectorSse::sub_s64( self.data, other.data ) )
+            result.data.replace( VectorSSE::sub_s64( self.data, other.data ) )
          when Type::F32
-            result.data.replace( VectorSse::sub_f32( self.data, other.data ) )
+            result.data.replace( VectorSSE::sub_f32( self.data, other.data ) )
          when Type::F64
-            result.data.replace( VectorSse::sub_f64( self.data, other.data ) )
+            result.data.replace( VectorSSE::sub_f64( self.data, other.data ) )
          end
 
          result
+      end
+
+      def transpose
+         raise "unimplemented"
+      end
+
+      def reshape( rows, cols )
+         raise "unimplemented"
       end
 
 
@@ -255,24 +307,58 @@ module VectorSse
 
       end
 
+      def valid_data_type( value )
+
+         unless [ Fixnum, Float ].include? value.class
+            raise ArgumentError.new( "expected argument of type Fixnum or Float" )
+         end
+
+      end
+
       attr_accessor :data
       
    end
    Matrix = Mat
 
 
-   class Vec < Array
+   class Array < Array
 
       attr_reader :type
 
       def initialize( type, size=0, val=nil )
          super( size, val )
 
-         if VectorSse::valid_type( type )
+         if VectorSSE::valid_type( type )
             @type = type
          else
             raise "invalid SSE vector type"
          end
+      end
+
+      def <<( value )
+         unless [ Fixnum, Float ].include? value.class
+            raise ArgumentError.new(
+               "expected argument of type Fixnum or Float for argument 0" )
+         end
+         super( value )
+      end
+
+      def insert( index, *values )
+         values.each_with_index do |value,arg_index|
+            unless [ Fixnum, Float ].include? value.class
+               raise ArgumentError.new(
+                  "expected argument of type Fixnum or Float for argument #{arg_index}" )
+            end
+         end
+         super( index, values )
+      end
+
+      def []=( index, value )
+         unless [ Fixnum, Float ].include? value.class
+            raise ArgumentError.new(
+               "expected argument of type Fixnum or Float for argument 1" )
+         end
+         super( index, value )
       end
  
       # Note:
@@ -283,7 +369,7 @@ module VectorSse
 
          if [ Fixnum, Float ].include? other.class
 
-            other = Array.new( self.length, other )
+            other = ::Array.new( self.length, other )
 
          elsif other.class != self.class
 
@@ -292,17 +378,17 @@ module VectorSse
 
          end
 
-         result = Vector.new( @type )
+         result = self.class.new( @type )
 
          case @type
          when Type::S32
-            result.replace( VectorSse::add_s32( self, other ) )
+            result.replace( VectorSSE::add_s32( self, other ) )
          when Type::S64
-            result.replace( VectorSse::add_s64( self, other ) )
+            result.replace( VectorSSE::add_s64( self, other ) )
          when Type::F32
-            result.replace( VectorSse::add_f32( self, other ) )
+            result.replace( VectorSSE::add_f32( self, other ) )
          when Type::F64
-            result.replace( VectorSse::add_f64( self, other ) )
+            result.replace( VectorSSE::add_f64( self, other ) )
          end
 
          result
@@ -315,23 +401,23 @@ module VectorSse
       def -( other )
 
          if [ Fixnum, Float ].include? other.class
-            other = Array.new( self.length, other )
+            other = ::Array.new( self.length, other )
          elsif other.class != self.class
             raise ArgumentError.new(
-               "expect argument of type #{self.class}, Fixnum, or Float for argument 0" )
+               "expected argument of type #{self.class}, Fixnum, or Float for argument 0" )
          end
 
-         result = Vector.new( @type )
+         result = self.class.new( @type )
 
          case @type
          when Type::S32
-            result.replace( VectorSse::sub_s32( self, other ) )
+            result.replace( VectorSSE::sub_s32( self, other ) )
          when Type::S64
-            result.replace( VectorSse::sub_s64( self, other ) )
+            result.replace( VectorSSE::sub_s64( self, other ) )
          when Type::F32
-            result.replace( VectorSse::sub_f32( self, other ) )
+            result.replace( VectorSSE::sub_f32( self, other ) )
          when Type::F64
-            result.replace( VectorSse::sub_f64( self, other ) )
+            result.replace( VectorSSE::sub_f64( self, other ) )
          end
 
          result
@@ -342,13 +428,13 @@ module VectorSse
 
          case @type
          when Type::S32
-            sum_result = VectorSse::sum_s32( self )
+            sum_result = VectorSSE::sum_s32( self )
          when Type::S64
-            sum_result = VectorSse::sum_s64( self )
+            sum_result = VectorSSE::sum_s64( self )
          when Type::F32
-            sum_result = VectorSse::sum_f32( self )
+            sum_result = VectorSSE::sum_f32( self )
          when Type::F64
-            sum_result = VectorSse::sum_f64( self )
+            sum_result = VectorSSE::sum_f64( self )
          else
             raise "invalid SSE vector type"
          end
@@ -359,26 +445,31 @@ module VectorSse
       def *( other )
 
          unless [ Fixnum, Float ].include? other.class
+
+            raise ArgumentError.new( "expected argument of type Float or Fixnum for argument 0" )
+
          end
 
-         other = Vector.new( @type, self.length, other )
-         result = Vector.new( @type )
+         other  = self.class.new( @type, self.length, other )
+         result = self.class.new( @type )
 
          case @type
          when Type::S32
-            result.replace( VectorSse::vec_mul_s32( self, other ) )
+            result.replace( VectorSSE::vec_mul_s32( self, other ) )
+         when Type::S64
+            result.replace( VectorSSE::vec_mul_s64( self, other ) )
          when Type::F32
-            result.replace( VectorSse::vec_mul_f32( self, other ) )
+            result.replace( VectorSSE::vec_mul_f32( self, other ) )
          when Type::F64
-            result.replace( VectorSse::vec_mul_f64( self, other ) )
+            result.replace( VectorSSE::vec_mul_f64( self, other ) )
          end
 
          result
       end
 
    end
-   Vector = Vec
+   Arr = Array
 
 
-end # module VectorSse
+end # module VectorSSE
 

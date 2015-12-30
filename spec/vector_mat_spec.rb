@@ -5,37 +5,37 @@ rescue StandardError => e
    require File.join( '..', 'lib', 'vector_sse' )
 end
 
-RSpec.describe VectorSse::Mat do
+RSpec.describe VectorSSE::Mat do
 
    describe "constructor" do
 
       it "raises exception on invalid type" do
          expect {
-            VectorSse::Mat.new( VectorSse::Type::INVALID, 2, 1 )
-         }.to raise_error "invalid SSE matrix type"
+            VectorSSE::Mat.new( VectorSSE::Type::INVALID, 2, 1 )
+         }.to raise_error ArgumentError, "invalid SSE matrix type for argument 0"
       end
 
       it "raises exception on invalid row dimension" do
          expect {
-            VectorSse::Mat.new( VectorSse::Type::S32, 0, 1 )
-         }.to raise_error "row count must be greater than zero"
+            VectorSSE::Mat.new( VectorSSE::Type::S32, 0, 1 )
+         }.to raise_error ArgumentError, "row count must be greater than zero for argument 1"
       end
 
       it "raises exception on invalid column dimension" do
          expect {
-            VectorSse::Mat.new( VectorSse::Type::S32, 2, 0 )
-         }.to raise_error "column count must be greater than zero"
+            VectorSSE::Mat.new( VectorSSE::Type::S32, 2, 0 )
+         }.to raise_error ArgumentError, "column count must be greater than zero for argument 2"
       end
 
       it "initializes with correct type and dimensions" do
-         mat = VectorSse::Mat.new( VectorSse::Type::S32, 10, 8 )
-         expect( mat.type ).to eq( VectorSse::Type::S32 )
+         mat = VectorSSE::Mat.new( VectorSSE::Type::S32, 10, 8 )
+         expect( mat.type ).to eq( VectorSSE::Type::S32 )
          expect( mat.rows ).to eq( 10 )
          expect( mat.cols ).to eq( 8 )
       end
 
       it "initializes all elements to zero" do
-         mat = VectorSse::Mat.new( VectorSse::Type::S32, 4, 2 )
+         mat = VectorSSE::Mat.new( VectorSSE::Type::S32, 4, 2 )
          8.times do |index|
             expect( mat[ index ] ).to eq( 0 )
          end
@@ -46,11 +46,11 @@ RSpec.describe VectorSse::Mat do
    describe "attributes" do
       it "raises exception on attempt to access protected field" do
          expect {
-            mat = VectorSse::Mat.new( VectorSse::Type::S32, 2, 4 )
+            mat = VectorSSE::Mat.new( VectorSSE::Type::S32, 2, 4 )
             protected_data = mat.data
          }.to raise_error NoMethodError
          expect {
-            mat = VectorSse::Mat.new( VectorSse::Type::S32, 2, 4 )
+            mat = VectorSSE::Mat.new( VectorSSE::Type::S32, 2, 4 )
             mat.data = []
          }.to raise_error NoMethodError
       end
@@ -58,7 +58,7 @@ RSpec.describe VectorSse::Mat do
 
    describe "read element" do
 
-      mat = VectorSse::Mat.new( VectorSse::Type::S32, 2, 4 )
+      mat = VectorSSE::Mat.new( VectorSSE::Type::S32, 2, 4 )
       mat.fill([
          1, 2, 3, 4,
          5, 6, 7, 8
@@ -101,7 +101,7 @@ RSpec.describe VectorSse::Mat do
    end
 
    describe "write element" do
-      mat = VectorSse::Mat.new( VectorSse::Type::S32, 2, 4 )
+      mat = VectorSSE::Mat.new( VectorSSE::Type::S32, 2, 4 )
 
       it "raises exception on invalid row with 'set' writer" do
          expect {
@@ -143,7 +143,7 @@ RSpec.describe VectorSse::Mat do
 
    describe "to string" do
       it "renders matrix as string" do
-         mat = VectorSse::Mat.new( VectorSse::Type::S32, 2, 4 )
+         mat = VectorSSE::Mat.new( VectorSSE::Type::S32, 2, 4 )
          mat.fill([
             1, 2, 3, 4,
             5, 6, 7, 8
@@ -155,13 +155,13 @@ RSpec.describe VectorSse::Mat do
 
    describe "matrix addition and subtraction" do
       it "raises exception if the addends are not of equal size" do
-         left = VectorSse::Mat.new( VectorSse::Type::S32, 3, 2 )
+         left = VectorSSE::Mat.new( VectorSSE::Type::S32, 3, 2 )
          left.fill([
             1, 2,
             3, 4,
             5, 6
          ])
-         right = VectorSse::Mat.new( VectorSse::Type::S32, 2, 1 )
+         right = VectorSSE::Mat.new( VectorSSE::Type::S32, 2, 1 )
          right.fill([
             1,
             2
@@ -177,13 +177,13 @@ RSpec.describe VectorSse::Mat do
       end
 
       it "returns correct sum" do
-         left = VectorSse::Mat.new( VectorSse::Type::S32, 3, 2 )
+         left = VectorSSE::Mat.new( VectorSSE::Type::S32, 3, 2 )
          left.fill([
             1, 2,
             3, 4,
             5, 6
          ])
-         right = VectorSse::Mat.new( VectorSse::Type::S32, 3, 2 )
+         right = VectorSSE::Mat.new( VectorSSE::Type::S32, 3, 2 )
          right.fill([
             1, 2,
             3, 4,
@@ -214,7 +214,7 @@ RSpec.describe VectorSse::Mat do
       end
 
       it "returns correct sum when added to self" do
-         left = VectorSse::Mat.new( VectorSse::Type::S32, 3, 2 )
+         left = VectorSSE::Mat.new( VectorSSE::Type::S32, 3, 2 )
          left.fill([
             1, 2,
             3, 4,
@@ -234,13 +234,13 @@ RSpec.describe VectorSse::Mat do
       end
 
       it "returns correct sum when added and assigned to self" do
-         left = VectorSse::Mat.new( VectorSse::Type::S32, 3, 2 )
+         left = VectorSSE::Mat.new( VectorSSE::Type::S32, 3, 2 )
          left.fill([
             1, 2,
             3, 4,
             5, 6
          ])
-         right = VectorSse::Mat.new( VectorSse::Type::S32, 3, 2 )
+         right = VectorSSE::Mat.new( VectorSSE::Type::S32, 3, 2 )
          right.fill([
             1, 2,
             3, 4,
@@ -248,7 +248,7 @@ RSpec.describe VectorSse::Mat do
          ])
 
          left += right
-         expect( left.type ).to eq( VectorSse::Type::S32 )
+         expect( left.type ).to eq( VectorSSE::Type::S32 )
          expect( left.rows ).to eq( 3 )
          expect( left.cols ).to eq( 2 )
 
@@ -262,17 +262,17 @@ RSpec.describe VectorSse::Mat do
 
    describe "matrix multiplication" do
       it "raises exception for invalid argument" do
-         left = VectorSse::Mat.new( VectorSse::Type::S32, 2, 2 )
+         left = VectorSSE::Mat.new( VectorSSE::Type::S32, 2, 2 )
          right = "this is not a matrix"
 
          expect {
             left * right
-         }.to raise_error ArgumentError, "expected argument of type VectorSse::Mat for argument 0"
+         }.to raise_error ArgumentError, "expected argument of type VectorSSE::Mat for argument 0"
       end
 
       it "raises exception on invalid factor dimensions" do
-         left = VectorSse::Mat.new( VectorSse::Type::S32, 2, 2 )
-         right = VectorSse::Mat.new( VectorSse::Type::S32, 1, 2 )
+         left = VectorSSE::Mat.new( VectorSSE::Type::S32, 2, 2 )
+         right = VectorSSE::Mat.new( VectorSSE::Type::S32, 1, 2 )
 
          expect {
             left * right
@@ -280,13 +280,13 @@ RSpec.describe VectorSse::Mat do
       end
 
       it "returns correct signed 32-bit result" do
-         left = VectorSse::Mat.new( VectorSse::Type::S32, 3, 2 )
+         left = VectorSSE::Mat.new( VectorSSE::Type::S32, 3, 2 )
          left.fill([
             1, 2,
             3, 4,
             5, 6
          ])
-         right = VectorSse::Mat.new( VectorSse::Type::S32, 2, 1 )
+         right = VectorSSE::Mat.new( VectorSSE::Type::S32, 2, 1 )
          right.fill([
             1,
             2
@@ -303,13 +303,13 @@ RSpec.describe VectorSse::Mat do
       end
 
       it "returns result with same type as left factor" do
-         left = VectorSse::Mat.new( VectorSse::Type::S32, 3, 2 )
+         left = VectorSSE::Mat.new( VectorSSE::Type::S32, 3, 2 )
          left.fill([
             1, 2,
             3, 4,
             5, 6
          ])
-         right = VectorSse::Mat.new( VectorSse::Type::F32, 2, 1 )
+         right = VectorSSE::Mat.new( VectorSSE::Type::F32, 2, 1 )
          right.fill([
             1.9,
             2.3
@@ -326,20 +326,20 @@ RSpec.describe VectorSse::Mat do
       end
 
       it "returns correct float 32-bit product" do
-         left = VectorSse::Mat.new( VectorSse::Type::F32, 3, 2 )
+         left = VectorSSE::Mat.new( VectorSSE::Type::F32, 3, 2 )
          left.fill([
             1.2, 2.3,
             3.4, 4.5,
             5.6, 6.7
          ])
-         right = VectorSse::Mat.new( VectorSse::Type::F32, 2, 1 )
+         right = VectorSSE::Mat.new( VectorSSE::Type::F32, 2, 1 )
          right.fill([
             1.9,
             2.3
          ])
 
          result = left * right
-         expect( result.type ).to eq( VectorSse::Type::F32 )
+         expect( result.type ).to eq( VectorSSE::Type::F32 )
          expect( result.rows ).to eq( left.rows )
          expect( result.cols ).to eq( right.cols )
 
@@ -359,7 +359,7 @@ RSpec.describe VectorSse::Mat do
 
          scalar_value = 1.1
 
-         left = VectorSse::Mat.new( VectorSse::Type::F32, 3, 2 )
+         left = VectorSSE::Mat.new( VectorSSE::Type::F32, 3, 2 )
          left.fill( original_values )
 
          left -= scalar_value

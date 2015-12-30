@@ -1,12 +1,19 @@
+# -*- encoding: utf-8 -*-
+require_relative 'lib/vector_sse'
+
 Gem::Specification.new do |s|
    s.name        = 'vector_sse'
-   s.version     = '0.0.0'
-   s.date        = '2010-04-28'
-   s.summary     = "SIMD vector and matrix operations"
-   s.description = "A gem for performing SIMD arithmetic, via x86 SSE, in Ruby"
+   s.version     = VectorSSE::VERSION
+   s.date        = '2015-12-28'
+   s.summary     = "SIMD accelerated vector and matrix operations"
+   s.description = "VectorSse employs x86 Streaming SIMD Extensions (SSE), v3 or greater, to accelerate basic vector and matrix computations in Ruby."
    s.authors     = [ "Robert Glissmann" ]
    s.email       = 'Robert.Glissmann@gmail.com'
-   s.files       = [ "lib/vector_sse.rb" ]
+   s.files       = `git ls-files`.split("\n")
    s.extensions  = %w[ext/vector_sse/extconf.rb]
-   s.license     = 'BSD'
+   s.licenses    = ['BSD']
+   s.homepage    = 'https://github.com/rgmann/vector_sse'
+
+   s.add_development_dependency 'rake-compiler', '~> 0.9.5'
+   s.add_development_dependency 'rspec', '~> 3.1.0'
 end
