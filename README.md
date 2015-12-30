@@ -72,7 +72,7 @@ use the appropriate implementation.
      product = left * 3.14
 
 
-### Example: Scale a matrix by a scalar value ###
+### Example: Subtract Arrays and find the sum of the elements of an array ###
 
      require 'vector_sse'
 
