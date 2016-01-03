@@ -36,6 +36,7 @@
 #include <smmintrin.h>
 #endif
 #include "vector_sse_vec_mul.h"
+#include "vector_sse_common.h"
 
 #define  SSE_VECTOR_WIDTH    (4)
 // #define  EL_PER_VEC    SSE_VECTOR_WIDTH
@@ -66,14 +67,14 @@ static inline __m128i mul_s64( const __m128i* left_vec, const __m128i* right_vec
    return _mm_loadu_si128( (const __m128i *)result );
 }
 
-static inline __m128i mul_f32(const __m128i* a, const __m128i* b )
+static inline __m128i mul_f32_ptr(const __m128i* a, const __m128i* b )
 {
-   return _mm_mul_ps( *a, *b );
+   return mul_f32( *a, *b );
 }
 
-static inline __m128i mul_f64(const __m128i* a, const __m128i* b )
+static inline __m128i mul_f64_ptr(const __m128i* a, const __m128i* b )
 {
-   return _mm_mul_pd( *a, *b );
+   return mul_f64( *a, *b );
 }
 
 
@@ -95,9 +96,6 @@ VALUE FUNC_NAME( VALUE self, VALUE left, VALUE right ) \
 \
    TYPE result_segment[ EL_PER_VEC ]; \
    __m128i result_vec; \
-\
-   __m128i sign_left;  \
-   __m128i sign_right; \
 \
    Check_Type( left, T_ARRAY );  \
    Check_Type( right, T_ARRAY ); \
@@ -152,6 +150,6 @@ VALUE FUNC_NAME( VALUE self, VALUE left, VALUE right ) \
 
 TEMPLATE_VEC_MUL_S( method_vec_mul_s32, int32_t, 32, NUM2INT, INT2NUM, 4, mul_s32 );
 TEMPLATE_VEC_MUL_S( method_vec_mul_s64, int64_t, 64, NUM2LL, LL2NUM, 2, mul_s64 );
-TEMPLATE_VEC_MUL_S( method_vec_mul_f32, float, 32, NUM2DBL, DBL2NUM, 4, mul_f32 );
-TEMPLATE_VEC_MUL_S( method_vec_mul_f64, double, 64, NUM2DBL, DBL2NUM, 2, mul_f64 );
+TEMPLATE_VEC_MUL_S( method_vec_mul_f32, float, 32, NUM2DBL, DBL2NUM, 4, mul_f32_ptr );
+TEMPLATE_VEC_MUL_S( method_vec_mul_f64, double, 64, NUM2DBL, DBL2NUM, 2, mul_f64_ptr );
 

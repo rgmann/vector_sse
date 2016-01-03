@@ -32,9 +32,31 @@
 
 #include <string.h>
 #include <emmintrin.h>
+#include <ruby.h>
 #include "vector_sse_sum.h"
+#include "vector_sse_common.h"
 
-#define  TEMPLATE_SUM_S( FUNC_NAME, TYPE, OFTYPE, TYPE_SIZE, CONV_IN, CONV_OUT, EL_PER_VEC, ADD ) \
+
+// Check for overflow
+// __m128i sign_left;
+// __m128i sign_right;
+// const int32_t OVERFLOW_MASK = ( (int32_t)0x1 << (32-1) );
+// int32_t overflow[ 4 ];
+// __m128i* overflow_vec = (__m128i*)overflow;
+// sign_left = _mm_xor_si128(result_vec, left_vec);
+// sign_right = _mm_xor_si128(result_vec, right_vec);
+// *overflow_vec = _mm_and_si128(sign_left, sign_right);
+
+// for ( vector_pos = 0; vector_pos < 4; ++vector_pos )
+// {
+//    if ( ( (int32_t)overflow[ vector_pos ] & OVERFLOW_MASK ) )
+//    {
+//       rb_raise( rb_eRuntimeError, "Vector addition overflow" );
+//    }
+// }
+
+
+#define  TEMPLATE_SUM_S( FUNC_NAME, TYPE, CONV_IN, CONV_OUT, EL_PER_VEC, ADDER ) \
 VALUE FUNC_NAME( VALUE self, VALUE vector ) \
 { \
    uint32_t length      = 0; \
@@ -44,20 +66,12 @@ VALUE FUNC_NAME( VALUE self, VALUE vector ) \
 \
    TYPE  result = 0; \
 \
-   TYPE left_segment[ EL_PER_VEC ]; \
-   TYPE right_segment[ EL_PER_VEC ]; \
    TYPE result_segment[ EL_PER_VEC ]; \
    TYPE vector_segment[ EL_PER_VEC ]; \
 \
-   __m128i left_vec; \
-   __m128i right_vec; \
+   __m128i left_vec;   \
+   __m128i right_vec;  \
    __m128i result_vec; \
-\
-   __m128i sign_left; \
-   __m128i sign_right; \
-   const OFTYPE OVERFLOW_MASK = ( (OFTYPE)0x1 << (TYPE_SIZE-1) ); \
-   OFTYPE overflow[ EL_PER_VEC ]; \
-   __m128i* overflow_vec = (__m128i*)overflow; \
 \
    Check_Type( vector, T_ARRAY ); \
 \
@@ -85,19 +99,7 @@ VALUE FUNC_NAME( VALUE self, VALUE vector ) \
          right_vec = _mm_loadu_si128( (const __m128i *)vector_segment ); \
          left_vec  = _mm_loadu_si128( &result_vec ); \
 \
-         result_vec = ADD( left_vec, right_vec ); \
-\
-         sign_left = _mm_xor_si128(result_vec, left_vec); \
-         sign_right = _mm_xor_si128(result_vec, right_vec); \
-         *overflow_vec = _mm_and_si128(sign_left, sign_right); \
-\
-         for ( vector_pos = 0; vector_pos < EL_PER_VEC; ++vector_pos ) \
-         { \
-            if ( ( (OFTYPE)overflow[ vector_pos ] & OVERFLOW_MASK ) ) \
-            { \
-               rb_raise( rb_eRuntimeError, "Vector addition overflow" ); \
-            } \
-         } \
+         result_vec = ADDER( left_vec, right_vec ); \
       } \
 \
       _mm_store_si128( (__m128i*)result_segment, result_vec ); \
@@ -111,8 +113,8 @@ VALUE FUNC_NAME( VALUE self, VALUE vector ) \
    return CONV_OUT( result ); \
 }
 
-TEMPLATE_SUM_S( method_vec_sum_s32, int32_t, int32_t, 32, NUM2INT, INT2NUM, 4, _mm_add_epi32 );
-TEMPLATE_SUM_S( method_vec_sum_s64, int64_t, int64_t, 64, NUM2LL, LL2NUM, 2, _mm_add_epi64 );
-TEMPLATE_SUM_S( method_vec_sum_f32, float, int32_t, 32, NUM2DBL, DBL2NUM, 4, _mm_add_ps );
-TEMPLATE_SUM_S( method_vec_sum_f64, double, int64_t, 32, NUM2DBL, DBL2NUM, 2, _mm_add_pd );
+TEMPLATE_SUM_S( method_vec_sum_s32, int32_t, NUM2INT, INT2NUM, 4, _mm_add_epi32 );
+TEMPLATE_SUM_S( method_vec_sum_s64, int64_t, NUM2LL, LL2NUM, 2, _mm_add_epi64 );
+TEMPLATE_SUM_S( method_vec_sum_f32, float, NUM2DBL, DBL2NUM, 4, add_f32 );
+TEMPLATE_SUM_S( method_vec_sum_f64, double, NUM2DBL, DBL2NUM, 2, add_f64 );
 

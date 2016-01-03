@@ -32,6 +32,7 @@
 
 #include <emmintrin.h>
 #include "vector_sse_mul.h"
+#include "vector_sse_common.h"
 
 #define  SSE_VECTOR_WIDTH    (4)
 
@@ -40,7 +41,6 @@ VALUE method_mat_mul_s32( VALUE self, VALUE left, VALUE left_rows_rb, VALUE left
    uint32_t left_row = 0;
    uint32_t right_col = 0;
    uint32_t common = 0;
-   uint32_t vector_pos = 0;
    uint32_t input_index = 0;
    uint32_t pos = 0;
 
@@ -148,16 +148,7 @@ VALUE method_mat_mul_s64( VALUE self, VALUE left, VALUE left_rows_rb, VALUE left
    uint32_t left_row = 0;
    uint32_t right_col = 0;
    uint32_t common = 0;
-   uint32_t vector_pos = 0;
-   uint32_t input_index = 0;
    uint32_t pos = 0;
-
-   int64_t left_segment[ SSE_VECTOR_WIDTH ];
-   int64_t right_segment[ SSE_VECTOR_WIDTH ];
-
-   __m128i* left_vec = NULL;
-   __m128i* right_vec = NULL;
-   __m128i result_vec;
 
    VALUE result = Qnil;
 
@@ -233,7 +224,6 @@ VALUE method_mat_mul_f32( VALUE self, VALUE left, VALUE left_rows_rb, VALUE left
    uint32_t left_row = 0;
    uint32_t right_col = 0;
    uint32_t common = 0;
-   uint32_t vector_pos = 0;
    uint32_t input_index = 0;
    uint32_t pos = 0;
 
@@ -303,7 +293,7 @@ VALUE method_mat_mul_f32( VALUE self, VALUE left, VALUE left_rows_rb, VALUE left
 
             left_vec   = ( __m128i *)left_segment;
             right_vec  = ( __m128i *)right_segment;
-            result_vec = _mm_mul_ps( *left_vec, *right_vec );
+            result_vec = mul_f32( *left_vec, *right_vec );
 
             _mm_store_si128( (__m128i*)result_segment, result_vec );
             for ( pos = 0; pos < SSE_VECTOR_WIDTH; ++pos )
