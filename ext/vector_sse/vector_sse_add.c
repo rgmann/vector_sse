@@ -32,6 +32,7 @@
 
 #include <emmintrin.h>
 #include "vector_sse_add.h"
+#include "vector_sse_common.h"
 
 #define  TEMPLATE_ADD_S( FUNC_NAME, TYPE, OFTYPE, TYPE_SIZE, CONV_IN, CONV_OUT, EL_PER_VEC, ADD ) \
 VALUE FUNC_NAME( VALUE self, VALUE left, VALUE right ) \
@@ -118,10 +119,10 @@ VALUE FUNC_NAME( VALUE self, VALUE left, VALUE right ) \
 
 TEMPLATE_ADD_S( method_vec_add_s32, int32_t, int32_t, 32, NUM2INT, INT2NUM, 4, _mm_add_epi32 );
 TEMPLATE_ADD_S( method_vec_add_s64, int64_t, int64_t, 64, NUM2LL, LL2NUM, 2, _mm_add_epi64 );
-TEMPLATE_ADD_S( method_vec_add_f32, float, int32_t, 32, NUM2DBL, DBL2NUM, 4, _mm_add_ps );
-TEMPLATE_ADD_S( method_vec_add_f64, double, int64_t, 64, NUM2DBL, DBL2NUM, 2, _mm_add_pd );
+TEMPLATE_ADD_S( method_vec_add_f32, float, int32_t, 32, NUM2DBL, DBL2NUM, 4, add_f32 );
+TEMPLATE_ADD_S( method_vec_add_f64, double, int64_t, 64, NUM2DBL, DBL2NUM, 2, add_f64 );
 
 TEMPLATE_ADD_S( method_vec_sub_s32, int32_t, int32_t, 32, NUM2INT, INT2NUM, 4, _mm_sub_epi32 );
 TEMPLATE_ADD_S( method_vec_sub_s64, int64_t, int64_t, 64, NUM2LL, LL2NUM, 2, _mm_sub_epi64 );
-TEMPLATE_ADD_S( method_vec_sub_f32, float, int32_t, 32, NUM2DBL, DBL2NUM, 4, _mm_sub_ps );
-TEMPLATE_ADD_S( method_vec_sub_f64, double, int64_t, 64, NUM2DBL, DBL2NUM, 2, _mm_sub_pd );
+TEMPLATE_ADD_S( method_vec_sub_f32, float, int32_t, 32, NUM2DBL, DBL2NUM, 4, sub_f32 );
+TEMPLATE_ADD_S( method_vec_sub_f64, double, int64_t, 64, NUM2DBL, DBL2NUM, 2, sub_f64 );

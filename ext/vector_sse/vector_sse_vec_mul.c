@@ -36,6 +36,7 @@
 #include <smmintrin.h>
 #endif
 #include "vector_sse_vec_mul.h"
+#include "vector_sse_common.h"
 
 #define  SSE_VECTOR_WIDTH    (4)
 // #define  EL_PER_VEC    SSE_VECTOR_WIDTH
@@ -66,18 +67,19 @@ static inline __m128i mul_s64( const __m128i* left_vec, const __m128i* right_vec
    return _mm_loadu_si128( (const __m128i *)result );
 }
 
-static inline __m128i mul_f32(const __m128i* a, const __m128i* b )
+static inline __m128 mul_f32_ptr(const __m128* left, const __m128* right )
 {
-   return _mm_mul_ps( *a, *b );
+   return _mm_mul_ps( *left, *right );
 }
 
-static inline __m128i mul_f64(const __m128i* a, const __m128i* b )
+static inline __m128d mul_f64_ptr(const __m128d* left, const __m128d* right )
 {
-   return _mm_mul_pd( *a, *b );
+   return _mm_mul_pd( *left, *right );
 }
 
 
-#define  TEMPLATE_VEC_MUL_S( FUNC_NAME, TYPE, TYPE_SIZE, CONV_IN, CONV_OUT, EL_PER_VEC, MULOP ) \
+#define  TEMPLATE_VEC_MUL_S( \
+   FUNC_NAME, TYPE, CONV_IN, CONV_OUT, EL_PER_VEC, ITYPE, LOAD, LCAST, STORE, SCAST, MULOP ) \
 VALUE FUNC_NAME( VALUE self, VALUE left, VALUE right ) \
 { \
    uint32_t length      = 0; \
@@ -90,14 +92,11 @@ VALUE FUNC_NAME( VALUE self, VALUE left, VALUE right ) \
    TYPE left_segment[ EL_PER_VEC ];  \
    TYPE right_segment[ EL_PER_VEC ]; \
 \
-   __m128i left_vec;  \
-   __m128i right_vec; \
+   ITYPE left_vec;  \
+   ITYPE right_vec; \
 \
    TYPE result_segment[ EL_PER_VEC ]; \
-   __m128i result_vec; \
-\
-   __m128i sign_left;  \
-   __m128i sign_right; \
+   ITYPE result_vec; \
 \
    Check_Type( left, T_ARRAY );  \
    Check_Type( right, T_ARRAY ); \
@@ -127,12 +126,12 @@ VALUE FUNC_NAME( VALUE self, VALUE left, VALUE right ) \
             } \
          } \
 \
-         left_vec  = _mm_loadu_si128( (const __m128i *)left_segment );  \
-         right_vec = _mm_loadu_si128( (const __m128i *)right_segment ); \
+         left_vec  = LOAD( (const LCAST *)left_segment );  \
+         right_vec = LOAD( (const LCAST *)right_segment ); \
 \
          result_vec = MULOP( &left_vec, &right_vec ); \
 \
-         _mm_store_si128( (__m128i*)result_segment, result_vec ); \
+         STORE( ( SCAST * )result_segment, result_vec ); \
 \
          for ( vector_pos = 0; vector_pos < EL_PER_VEC; ++vector_pos ) \
          { \
@@ -150,8 +149,40 @@ VALUE FUNC_NAME( VALUE self, VALUE left, VALUE right ) \
 }
 
 
-TEMPLATE_VEC_MUL_S( method_vec_mul_s32, int32_t, 32, NUM2INT, INT2NUM, 4, mul_s32 );
-TEMPLATE_VEC_MUL_S( method_vec_mul_s64, int64_t, 64, NUM2LL, LL2NUM, 2, mul_s64 );
-TEMPLATE_VEC_MUL_S( method_vec_mul_f32, float, 32, NUM2DBL, DBL2NUM, 4, mul_f32 );
-TEMPLATE_VEC_MUL_S( method_vec_mul_f64, double, 64, NUM2DBL, DBL2NUM, 2, mul_f64 );
+TEMPLATE_VEC_MUL_S(
+   method_vec_mul_s32,
+   int32_t,
+   NUM2INT, INT2NUM,
+   4,
+   __m128i,
+   _mm_loadu_si128, __m128i,
+   _mm_store_si128, __m128i,
+   mul_s32 );
+TEMPLATE_VEC_MUL_S(
+   method_vec_mul_s64,
+   int64_t,
+   NUM2LL, LL2NUM,
+   2,
+   __m128i,
+   _mm_loadu_si128, __m128i,
+   _mm_store_si128, __m128i,
+   mul_s64 );
+TEMPLATE_VEC_MUL_S(
+   method_vec_mul_f32,
+   float,
+   NUM2DBL, DBL2NUM,
+   4,
+   __m128,
+   _mm_load_ps, float,
+   _mm_store_ps, float,
+   mul_f32_ptr );
+TEMPLATE_VEC_MUL_S(
+   method_vec_mul_f64,
+   double,
+   NUM2DBL, DBL2NUM,
+   2,
+   __m128d,
+   _mm_load_pd, double,
+   _mm_store_pd, double,
+   mul_f64_ptr );
 
