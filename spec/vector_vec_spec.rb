@@ -30,6 +30,51 @@ RSpec.describe VectorSSE::Array do
    end
 
    describe "vector addition" do
+
+      it "raises exception if right addend is shorter than the left addend in addition" do
+         left = VectorSSE::Array.new( VectorSSE::Type::S32 )
+         left.replace [ 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 ]
+         right = VectorSSE::Array.new( VectorSSE::Type::S32 )
+         right.replace [ 1, 2, 3, 4, 5 ]
+
+         expect {
+            result = left + right
+         }.to raise_error "Vector lengths must be the same"
+      end
+
+      it "raises exception if right addend is shorter than the left addend in subtraction" do
+         left = VectorSSE::Array.new( VectorSSE::Type::S32 )
+         left.replace [ 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 ]
+         right = VectorSSE::Array.new( VectorSSE::Type::S32 )
+         right.replace [ 1, 2, 3, 4, 5 ]
+
+         expect {
+            result = left - right
+         }.to raise_error "Vector lengths must be the same"
+      end
+
+      it "raises exception if right addend is longer than the left addend in addition" do
+         left = VectorSSE::Array.new( VectorSSE::Type::S32 )
+         left.replace [ 1, 2, 3, 4, 5 ]
+         right = VectorSSE::Array.new( VectorSSE::Type::S32 )
+         right.replace [ 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 ]
+
+         expect {
+            result = left + right
+         }.to raise_error "Vector lengths must be the same"
+      end
+
+      it "raises exception if right addend is longer than the left addend in subtraction" do
+         left = VectorSSE::Array.new( VectorSSE::Type::S32 )
+         left.replace [ 1, 2, 3, 4, 5 ]
+         right = VectorSSE::Array.new( VectorSSE::Type::S32 )
+         right.replace [ 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 ]
+
+         expect {
+            result = left - right
+         }.to raise_error "Vector lengths must be the same"
+      end
+
       it "returns difference between vectors" do
          left = VectorSSE::Array.new( VectorSSE::Type::S32 )
          left.replace [ 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 ]

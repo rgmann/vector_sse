@@ -18,9 +18,9 @@ normal, non-SSE instructions to yield the overall sum of the 1000-element array.
 
 ## Install the gem ##
 
-Install it with [RubyGems](https://rubygems.org/) (currently pre-release)
+Install it with [RubyGems](https://rubygems.org/)
 
-    gem install vector_sse --pre
+    gem install vector_sse
 
 or add this to your Gemfile if you use [Bundler](http://gembundler.com/):
 
