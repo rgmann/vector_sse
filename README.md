@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/rgmann/vector_sse.svg?branch=master)](https://travis-ci.org/rgmann/vector_sse)
+
 ## Welcome to VectorSSE ##
 
 VectorSSE is a Ruby gem that uses x86 Streaming SIMD Extensions (SSE) to accelerate
