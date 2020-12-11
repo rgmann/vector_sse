@@ -1,4 +1,6 @@
 # -*- encoding: utf-8 -*-
+
+$:.push File.expand_path("../lib", __FILE__)
 require "vector_sse/version"
 
 Gem::Specification.new do |s|
