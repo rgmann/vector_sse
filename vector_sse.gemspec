@@ -1,5 +1,4 @@
 # -*- encoding: utf-8 -*-
-require_relative 'lib/vector_sse'
 
 Gem::Specification.new do |s|
    s.name        = 'vector_sse'
