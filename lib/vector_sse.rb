@@ -36,8 +36,6 @@ require File.join( bin_root, 'vector_sse.so' )
 
 module VectorSSE
 
-   VERSION = "0.0.3"
-
    module Type
       S32 = 0
       S64 = 1
