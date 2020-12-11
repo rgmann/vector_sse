@@ -138,7 +138,7 @@ module VectorSSE
 
          scalar_mul = false
 
-         if [ Fixnum, Float ].include? other.class
+         if [ Integer, Float ].include? other.class
 
             scalar_mul = true
             scalar_value = other
@@ -195,7 +195,7 @@ module VectorSSE
 
       def +( other )
 
-         if [ Fixnum, Float ].include? other.class
+         if [ Integer, Float ].include? other.class
 
             scalar_value = other
             other = Mat.new( @type, @rows, @cols )
@@ -211,7 +211,7 @@ module VectorSSE
          else
 
             raise ArgumentError.new(
-               "expect argument of type #{self.class}, Fixnum, or Float for argument 0" )
+               "expect argument of type #{self.class}, Integer, or Float for argument 0" )
 
          end
 
@@ -233,7 +233,7 @@ module VectorSSE
 
       def -( other )
 
-         if [ Fixnum, Float ].include? other.class
+         if [ Integer, Float ].include? other.class
 
             scalar_value = other
             other = Mat.new( @type, @rows, @cols )
@@ -249,7 +249,7 @@ module VectorSSE
          else
 
             raise ArgumentError.new(
-               "expect argument of type #{self.class}, Fixnum, or Float for argument 0" )
+               "expect argument of type #{self.class}, Integer, or Float for argument 0" )
 
          end
 
@@ -309,8 +309,8 @@ module VectorSSE
 
       def valid_data_type( value )
 
-         unless [ Fixnum, Float ].include? value.class
-            raise ArgumentError.new( "expected argument of type Fixnum or Float" )
+         unless [ Integer, Float ].include? value.class
+            raise ArgumentError.new( "expected argument of type Integer or Float" )
          end
 
       end
@@ -336,27 +336,27 @@ module VectorSSE
       end
 
       def <<( value )
-         unless [ Fixnum, Float ].include? value.class
+         unless [ Integer, Float ].include? value.class
             raise ArgumentError.new(
-               "expected argument of type Fixnum or Float for argument 0" )
+               "expected argument of type Integer or Float for argument 0" )
          end
          super( value )
       end
 
       def insert( index, *values )
          values.each_with_index do |value,arg_index|
-            unless [ Fixnum, Float ].include? value.class
+            unless [ Integer, Float ].include? value.class
                raise ArgumentError.new(
-                  "expected argument of type Fixnum or Float for argument #{arg_index}" )
+                  "expected argument of type Integer or Float for argument #{arg_index}" )
             end
          end
          super( index, values )
       end
 
       def []=( index, value )
-         unless [ Fixnum, Float ].include? value.class
+         unless [ Integer, Float ].include? value.class
             raise ArgumentError.new(
-               "expected argument of type Fixnum or Float for argument 1" )
+               "expected argument of type Integer or Float for argument 1" )
          end
          super( index, value )
       end
@@ -367,14 +367,14 @@ module VectorSSE
       #
       def +( other )
 
-         if [ Fixnum, Float ].include? other.class
+         if [ Integer, Float ].include? other.class
 
             other = ::Array.new( self.length, other )
 
          elsif other.class != self.class
 
             raise ArgumentError.new(
-               "expect argument of type #{self.class}, Fixnum, or Float for argument 0" )
+               "expect argument of type #{self.class}, Integer, or Float for argument 0" )
 
          end
 
@@ -400,11 +400,11 @@ module VectorSSE
       #
       def -( other )
 
-         if [ Fixnum, Float ].include? other.class
+         if [ Integer, Float ].include? other.class
             other = ::Array.new( self.length, other )
          elsif other.class != self.class
             raise ArgumentError.new(
-               "expected argument of type #{self.class}, Fixnum, or Float for argument 0" )
+               "expected argument of type #{self.class}, Integer, or Float for argument 0" )
          end
 
          result = self.class.new( @type )
@@ -444,9 +444,9 @@ module VectorSSE
 
       def *( other )
 
-         unless [ Fixnum, Float ].include? other.class
+         unless [ Integer, Float ].include? other.class
 
-            raise ArgumentError.new( "expected argument of type Float or Fixnum for argument 0" )
+            raise ArgumentError.new( "expected argument of type Float or Integer for argument 0" )
 
          end
 
