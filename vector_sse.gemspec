@@ -1,9 +1,11 @@
 # -*- encoding: utf-8 -*-
-require_relative 'lib/vector_sse'
+
+$:.push File.expand_path("../lib", __FILE__)
+require "vector_sse/version"
 
 Gem::Specification.new do |s|
    s.name        = 'vector_sse'
-   s.version     = VectorSSE::VERSION
+   s.version     = VectorSSE::VERSION.dup
    s.date        = Time.now.to_date.strftime('%Y-%m-%d')
    s.summary     = "SIMD accelerated vector and matrix operations"
    s.description = "VectorSse employs x86 Streaming SIMD Extensions (SSE), v3 or greater, to accelerate basic vector and matrix computations in Ruby."
